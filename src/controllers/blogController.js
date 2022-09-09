@@ -4,6 +4,7 @@ const mongoose = require("mongoose")
 const ObjectId = mongoose.Types.ObjectId //check whether the format or objectid is of 24 digit or not
 
 const isValid = function (value) { //function to check entered data is valid or not
+
     if (typeof value == "string") {
         if (value.trim() === "") {
             return false
@@ -12,17 +13,32 @@ const isValid = function (value) { //function to check entered data is valid or 
 }
 
 const isValidForArray = function (value) {      //function to check entered data in array is valid or not
+    console.log(value);
+
     const newArr = []
-    for (let i = 0; i < value.length; i++) {    //example :-   ["ghfgh","   ",56444,"freendon 1947,"ghhgf"]
-        if (typeof value[i] == "string") {
-            if (value[i].trimLeft() !== "") {
-                newArr.push(value[i])
-                console.log(value[i])
-            }
-        }
+    if (typeof value === "string") {
+        newArr.push(value.trim())
+        return newArr
     }
-    if (newArr.length == 0) { return false }
-    else { return newArr }
+
+    else if (Array.isArray(value)) {
+        console.log(value);
+
+        for (let i = 0; i < value.length; i++) {    //example :-   ["ghfgh","   ",56444,"freendon 1947,"ghhgf"]
+            if (typeof (value[i]) == "string") {
+                if (value[i].trim() !== "") {
+                    newArr.push(value[i].trim())
+                    console.log(value[i].trim())
+                }
+            }
+            else { return false }
+        }
+        if (newArr.length == 0) { return false }
+        // console.log(newArr);
+
+        else { return newArr }
+    }
+    else { return false }
 }
 
 // ----------------------------------------------------- createBlogs by body-----------done  done------------------------------------------
@@ -80,7 +96,7 @@ const deleteBlogsByParam = async function (req, res) {
         const blogId = req.params.blogId
 
         await blogModel.findByIdAndUpdate(blogId, { isDeleted: true, deletedAt: Date.now() }, { new: true })
-        return res.status(200).send({ status: true, msg: "blog deleted" })
+        return res.status(200).send()
     }
     catch (err) {
         return res.status(500).send({ status: false, msg: err.message })
@@ -110,11 +126,14 @@ const updateBlog = async function (req, res) {
         if (!isValid(body)) return res.status(400).send({ status: false, msg: "body in wrong format" })
         if (tags) {
             tags = isValidForArray(tags)
-            if (tags == false) { return res.status(400).send({ status: false, msg: "Tag is required" }) }
+            console.log("tags - " + tags);
+
+            if (tags == false) { return res.status(400).send({ status: false, msg: "Tag is required and must be in String or Array of String" }) }
         }
+
         if (subcategory) {
             subcategory = isValidForArray(subcategory)
-            if (subcategory == false) { return res.status(400).send({ status: false, msg: "subcategory is required" }) }
+            if (subcategory == false) { return res.status(400).send({ status: false, msg: "Subcategory is required and must be in String or Array of String" }) }
         }
 
 
@@ -135,7 +154,7 @@ const updateBlog = async function (req, res) {
             },
             { new: true });
 
-        return res.status(200).send({ status: true, message: "Successfully updated blog details", data: updatedBlog, });
+        return res.status(200).send({ status: true, data: updatedBlog });
 
 
     }
@@ -165,7 +184,7 @@ let deleteBlogsByQuery = async function (req, res) {
         if (temp.isDeleted != false) return res.status(404).send({ status: false, msg: "already Deleted" })
 
         await blogModel.updateMany(temp, { isDeleted: true, deletedAt: Date.now() }, { new: true })
-        return res.status(200).send({ status: true })
+        return res.status(200).send()
     }
     catch (err) {
         return res.status(500).send({ status: false, msg: err.message })

@@ -1,13 +1,13 @@
 const mongoose = require("mongoose")
 
-function isValidName(name) {
-    var isValid = /^([a-zA-Z])+$/
-    return isValid.test(name);
-}
-function isValidEmail(email) {
-    var isValid = /^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
-    return isValid.test(email);
-}
+// function isValidName(name) {
+//     var isValid = /^([a-zA-Z])+$/
+//     return isValid.test(name);
+// }
+// function isValidEmail(email) {
+//     var isValid = /^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+//     return isValid.test(email);
+// }
 
 // ^ Assert the start of the string
 // (?![0-9.]) Negative lookahead to assert that the string does not start with [0-9.]
@@ -22,14 +22,14 @@ const authorSchema = new mongoose.Schema({
     fname: {
         type: String,
         required: true,
-        trim: true,
-        validate: [isValidName, "Enter a valid Fname"]
+        trim: true
+        // validate: [isValidName, "Enter a valid Fname"]
     },
     lname: {
         type: String,
         required: true,
-        trim: true,
-        validate: [isValidName, "Enter a valid Lname"]
+        trim: true
+        // validate: [isValidName, "Enter a valid Lname"]
     },
     title: {
         type: String,
@@ -42,8 +42,8 @@ const authorSchema = new mongoose.Schema({
         required: true,
         unique: true,
         trim: true,
-        lowercase: true,
-        validate: [isValidEmail, "Enter a valid Email"]
+        lowercase: true
+        // validate: [isValidEmail, "Enter a valid Email"]
     },
     password: {
         type: String,

@@ -13,11 +13,19 @@ const authenticate = function (req, res, next) {
         // console.log(token);
         if (!token) return res.status(400).send({ status: false, msg: "token must be present" });
 
-        let decodedToken = jwt.verify(token, "project-1-group-59");
-        if (!decodedToken) return res.status(401).send({ status: false, msg: "token is invalid" });
-        req.decodedToken = decodedToken
+        // let decodedToken =
+        jwt.verify(token, "project-1-group-59", function (err, decodedToken) {
+            if (err) { return res.status(401).send({ status: false, msg: "token is invalid  17" }) }
+            console.log(decodedToken);
+            req.decodedToken = decodedToken
+            next()
+        });
+
+
+        // if (!decodedToken) return res.status(401).send({ status: false, msg: "token is invalid  18" });
+
         // console.log(req.decodedToken.authorId);    
-        next()
+        // next()
     }
     catch (err) {
         return res.status(500).send({ status: false, msg: err.message });
@@ -30,31 +38,31 @@ const authenticate = function (req, res, next) {
 const authorisation = async function (req, res, next) {
     try {
         const p = req.params.blogId
-        const q = req.query
         const b = req.body.authorId
+        const q = req.query
         // console.log(q);
 
         let userLoggedIn = req.decodedToken.authorId
 
         if (p) {
             //console.log("p - " + p);
+            if (!ObjectId.isValid(p.trim())) return res.status(400).send({ status: false, msg: "BlogId is not valid" })
             const userToBeModified = await blogModel.findOne({ _id: p })
 
-            if (!userToBeModified) return res.status(403).send({ status: false, msg: "Access denied from body" })
+            if (!userToBeModified) return res.status(403).send({ status: false, msg: "Access denied" })
 
-
-            if (userToBeModified.authorId.toString() !== userLoggedIn) return res.status(403).send({ status: false, msg: 'Access denied from body' })
+            if (userToBeModified.authorId.toString() !== userLoggedIn) return res.status(403).send({ status: false, msg: 'Access denied' })
             next()
         }
         else if (b) {
-            console.log(b);
-
+            // console.log(b);
+            if (!ObjectId.isValid(b.trim())) return res.status(400).send({ status: false, msg: "AuthorId is not valid" })
             const userToBeModified = await authorModel.findOne({ _id: b })
-            console.log(" userToBeModified - " + userToBeModified);
+            // console.log(" userToBeModified - " + userToBeModified);
 
-            if (!userToBeModified) return res.status(403).send({ status: false, msg: "Access denied from body" })
+            if (!userToBeModified) return res.status(400).send({ status: false, msg: "No Data Found" })  // ye sonali mam ne bataya tha
 
-            if (userToBeModified._id.toString() !== userLoggedIn) return res.status(403).send({ status: false, msg: 'Access denied from body' })
+            if (userToBeModified._id.toString() !== userLoggedIn) return res.status(403).send({ status: false, msg: 'Access denied' })
             next()
         }
 
@@ -79,11 +87,12 @@ const authorisation = async function (req, res, next) {
                 } else { temp.isPublished = true }
             }
 
+            // console.log(temp)
             // console.log(Object.values(temp))
-            if (Object.values(temp) == 0) return res.status(400).send({ status: false, msg: "please apply filter  1" })
+            if (Object.values(temp) == 0) return res.status(400).send({ status: false, msg: "please apply filter" })
 
             const userToBeModified = await blogModel.findOne(temp)
-            console.log("temp - " + userToBeModified);
+            // console.log("temp - " + userToBeModified);
 
             if (!userToBeModified) return res.status(403).send({ status: false, msg: 'Access denied' })
 
@@ -93,7 +102,6 @@ const authorisation = async function (req, res, next) {
             // console.log("userToBeModified - " + userToBeModified.authorId);
 
             if (userToBeModified.authorId.toString() !== userLoggedIn) return res.status(403).send({ status: false, msg: 'Access denied' })
-
 
             req.savedTemp = temp
 

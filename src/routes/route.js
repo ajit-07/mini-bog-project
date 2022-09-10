@@ -11,14 +11,13 @@ router.post("/authors", authorController.createAuthor) // to create authors
 
 router.post("/blogs", authMiddleware.authenticate, authMiddleware.authorisation, blogController.createBlogs) // to create blogs
 
-router.get("/blogs", authMiddleware.authenticate, authMiddleware.authorisation, blogController.getBlogs) // to finding blogs
+router.get("/blogs", authMiddleware.authenticate, blogController.getBlogs) // to finding blogs
 
 router.delete("/blogs/:blogId", authMiddleware.authenticate, authMiddleware.authorisation, blogController.deleteBlogsByParam) // to deleting blogs by param
 
-router.put("/blogs/:blogId", authMiddleware.authenticate, authMiddleware.authorisation, blogController.updateBlog) // to updating blogs by param
-
 router.delete("/blogs", authMiddleware.authenticate, authMiddleware.authorisation, blogController.deleteBlogsByQuery) // to deleting blogs by query
 
+router.put("/blogs/:blogId", authMiddleware.authenticate, authMiddleware.authorisation, blogController.updateBlog) // to updating blogs by param
 
 // phase - 2
 

@@ -15,8 +15,8 @@ const authenticate = function (req, res, next) {
 
         // let decodedToken =
         jwt.verify(token, "project-1-group-59", function (err, decodedToken) {
-            if (err) { return res.status(401).send({ status: false, msg: "token is invalid  17" }) }
-            console.log(decodedToken);
+            if (err) { return res.status(401).send({ status: false, msg: "token is invalid" }) }
+            // console.log(decodedToken);
             req.decodedToken = decodedToken
             next()
         });
@@ -70,14 +70,24 @@ const authorisation = async function (req, res, next) {
             //authorId for the logged-in user
 
             const temp = {}
+            console.log(q.category);
+            
             if (q.category && q.category.trim() !== "") { temp.category = q.category.trim() }
-
+            // this is for captital "authorid"
             if (q.authorid && q.authorid.trim() !== "") {
                 if (!ObjectId.isValid(q.authorid.trim())) return res.status(400).send({ status: false, msg: "AuthorId is not valid" })
                 temp.authorId = q.authorid.trim()
             }
+            // this is for captital "authorId"
+            if (q.authorId && q.authorId.trim() !== "") {
+                if (!ObjectId.isValid(q.authorId.trim())) return res.status(400).send({ status: false, msg: "AuthorId is not valid" })
+                temp.authorId = q.authorId.trim()
+            }
 
+            // this is for "tags"
             if (q.tags && q.tags.trim() !== "") { temp.tags = q.tags.trim() }
+            // this is for "tag"
+            if (q.tag && q.tag.trim() !== "") { temp.tags = q.tag.trim() }
 
             if (q.subcategory && q.subcategory.trim() !== "") { temp.subcategory = q.subcategory.trim() }
 
@@ -101,7 +111,11 @@ const authorisation = async function (req, res, next) {
             // console.log(" userLoggedIn - " + userLoggedIn);
             // console.log("userToBeModified - " + userToBeModified.authorId);
 
+
+
+
             if (userToBeModified.authorId.toString() !== userLoggedIn) return res.status(403).send({ status: false, msg: 'Access denied' })
+
 
             req.savedTemp = temp
 

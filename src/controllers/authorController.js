@@ -1,37 +1,39 @@
 const authorModel = require("../models/authorModel")
 
-// ----------------------------------------------------- create Author ------ done -----------------------------------------------
-
-
-// const createAuthor = async function (req, res) {
-//     try {
-//         const data = req.body
-//         if (Object.keys(data).length == 0) return res.status(400).send({ status: false, msg: "credentials are manadatory" })
-//         const authorData = await authorModel.create(data)
-//         return res.status(201).send({ status: true, data: authorData })
-//     }
-//     catch (err) {
-//         return res.status(500).send({ status: false, msg: err.message })
-//     }
-// }
-
-// module.exports.createAuthor = createAuthor
-
-
-
-
-function isValidName(name) {
-    var isValid = /^([a-zA-Z]){2,}$/
-    return isValid.test(name.trim());
+function isValidName(value) {
+    if (typeof value !== "string" || value.trim() == "") { return false }
+    var isValid = /^([a-zA-Z]){2,15}$/
+    // console.log(value.trim());
+    return isValid.test(value.trim());
 }
-function isValidEmail(email) {
-    var isValid = /[a-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}/;
-    // var isValid = /^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
-    return isValid.test(email.trim());
+
+function isEnum(value) {
+    if (typeof value !== "string") { return false }
+    else {
+        let titles = ["Mr", "Mrs", "Miss"]
+        for (let i = 0; i < titles.length; i++) {
+            if (titles[i] == value.trim()) { return true }
+        }
+        return false
+    }
 }
-function isValidPassword(password) {
-    var isValid =  /^(?=.[a-z])(?=.[A-Z])(?=.[0-9])(?=.[!@#\$%\^&\*])(?=.{8,})/  // /^(?=.[a-zA-Z0-9])(?=.[!@#\$%\^&\*])(?=.{8,15})/;
-    return isValid.test(password);
+
+function isValidEmail(value) {
+    if (typeof value !== "string" || value.trim() == "") { return false }
+    else {
+        var isValid = /[a-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}/;
+        // console.log(value.trim());
+        return isValid.test(value.trim());
+    }
+}
+
+function isValidPassword(value) {
+    if (typeof value !== "string" || value.trim() == "") { return false }
+    else {
+        var isValid = /^(?=.[a-z])(?=.[A-Z])(?=.[0-9])(?=.[!@#\$%\^&\*])(?=.{8,})/  // /^(?=.[a-zA-Z0-9])(?=.[!@#\$%\^&\*])(?=.{8,15})/;
+        console.log(value.trim());
+        return isValid.test(value.trim());
+    }
 }
 
 
@@ -41,14 +43,30 @@ function isValidPassword(password) {
 const createAuthor = async function (req, res) {
     try {
         const data = req.body
-        if (Object.keys(data).length == 0) return res.status(400).send({ status: false, msg: "credentials are manadatory" })
-        if (!isValidName(data.fname)) return res.status(400).send({ status: false, msg: "Invalid Fname" })
-        if (!isValidName(data.lname)) return res.status(400).send({ status: false, msg: "Invalid Lname" })
-        if (!isValidEmail(data.email)) return res.status(400).send({ status: false, msg: "Invalid Email" })
-        const eMail = data.email
-        const emailExist = await authorModel.findOne({ email: eMail })
+        const { fname, lname, title, email, password } = data
+        console.log(fname, lname, title, email, password);
+
+        if (Object.keys(data).length == 0) return res.status(400).send({ status: false, msg: "Data is mandatory" })
+
+        if (!fname) return res.status(400).send({ status: false, msg: "fname is Mandatory" })
+        if (!isValidName(fname)) return res.status(400).send({ status: false, msg: "Invalid Fname" })
+
+
+        if (!lname) return res.status(400).send({ status: false, msg: "lname is Mandatory" })
+        if (!isValidName(lname)) return res.status(400).send({ status: false, msg: "Invalid Lname" })
+
+
+        if (!title) return res.status(400).send({ status: false, msg: "title is Mandatory" })
+        if (!isEnum(title)) return res.status(400).send({ status: false, msg: 'Invalid Title ,available tiltes ( Mr, Mrs, Miss)' })
+
+        if (!email) return res.status(400).send({ status: false, msg: "email is Mandatory" })
+        if (!isValidEmail(email)) return res.status(400).send({ status: false, msg: "Invalid Email" })
+        const emailExist = await authorModel.findOne({ email: email })
         if (emailExist) return res.status(400).send({ status: false, msg: "Email Already Exist" })
-        if (!isValidPassword(data.password)) return res.status(400).send({ status: false, msg: "Use strong Password" })
+
+        // if (!password) return res.status(400).send({ status: false, msg: "password is Mandatory" })
+        // if (!isValidPassword(password)) return res.status(400).send({ status: false, msg: "Use strong Password" })
+
         const authorData = await authorModel.create(data)
         return res.status(201).send({ status: true, data: authorData })
     }

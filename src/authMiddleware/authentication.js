@@ -20,12 +20,6 @@ const authenticate = function (req, res, next) {
             req.decodedToken = decodedToken
             next()
         });
-
-
-        // if (!decodedToken) return res.status(401).send({ status: false, msg: "token is invalid  18" });
-
-        // console.log(req.decodedToken.authorId);    
-        // next()
     }
     catch (err) {
         return res.status(500).send({ status: false, msg: err.message });
@@ -56,6 +50,7 @@ const authorisation = async function (req, res, next) {
         }
         else if (b) {
             // console.log(b);
+            if (typeof b !== "string") { return res.status(400).send({ status: false, msg: "AuthorId is not valid " }) }
             if (!ObjectId.isValid(b.trim())) return res.status(400).send({ status: false, msg: "AuthorId is not valid" })
             const userToBeModified = await authorModel.findOne({ _id: b })
             // console.log(" userToBeModified - " + userToBeModified);
@@ -70,8 +65,8 @@ const authorisation = async function (req, res, next) {
             //authorId for the logged-in user
 
             const temp = {}
-            console.log(q.category);
-            
+            //console.log(q.category);
+
             if (q.category && q.category.trim() !== "") { temp.category = q.category.trim() }
             // this is for captital "authorid"
             if (q.authorid && q.authorid.trim() !== "") {
@@ -87,7 +82,7 @@ const authorisation = async function (req, res, next) {
             // this is for "tags"
             if (q.tags && q.tags.trim() !== "") { temp.tags = q.tags.trim() }
             // this is for "tag"
-            if (q.tag && q.tag.trim() !== "") { temp.tags = q.tag.trim() }
+            if (q.tag && q.tag.trim() !== "") { temp.tag = q.tag.trim() }
 
             if (q.subcategory && q.subcategory.trim() !== "") { temp.subcategory = q.subcategory.trim() }
 
@@ -96,32 +91,17 @@ const authorisation = async function (req, res, next) {
                     temp.isPublished = false
                 } else { temp.isPublished = true }
             }
-
-            // console.log(temp)
-            // console.log(Object.values(temp))
             if (Object.values(temp) == 0) return res.status(400).send({ status: false, msg: "please apply filter" })
 
             const userToBeModified = await blogModel.findOne(temp)
-            // console.log("temp - " + userToBeModified);
+            //console.log("temp - " + userToBeModified);
 
-            if (!userToBeModified) return res.status(403).send({ status: false, msg: 'Access denied' })
-
-            //userId comparision to check if the logged-in user is requesting for their own data
-
-            // console.log(" userLoggedIn - " + userLoggedIn);
-            // console.log("userToBeModified - " + userToBeModified.authorId);
-
-
-
+            if (!userToBeModified) return res.status(403).send({ status: false, msg: 'Access denied' }) //Ma'am
 
             if (userToBeModified.authorId.toString() !== userLoggedIn) return res.status(403).send({ status: false, msg: 'Access denied' })
-
-
             req.savedTemp = temp
-
             next()
         }
-
 
     }
     catch (err) {

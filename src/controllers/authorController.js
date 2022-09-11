@@ -30,11 +30,11 @@ function isValidEmail(value) {
 function isValidPassword(value) {
     if (typeof value !== "string" || value.trim() == "") { return false }
     else {
-        var isValid = /^(?=.[a-z])(?=.[A-Z])(?=.[0-9])(?=.[!@#\$%\^&\*])(?=.{8,})/  // /^(?=.[a-zA-Z0-9])(?=.[!@#\$%\^&\*])(?=.{8,15})/;
-        console.log(value.trim());
-        return isValid.test(value.trim());
+        let isValid = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/;
+        return isValid.test(value);
     }
 }
+
 
 
 // ----------------------------------------------------- create Author ------ done -----------------------------------------------
@@ -44,17 +44,15 @@ const createAuthor = async function (req, res) {
     try {
         const data = req.body
         const { fname, lname, title, email, password } = data
-        console.log(fname, lname, title, email, password);
+        //console.log(fname, lname, title, email, password);
 
         if (Object.keys(data).length == 0) return res.status(400).send({ status: false, msg: "Data is mandatory" })
 
         if (!fname) return res.status(400).send({ status: false, msg: "fname is Mandatory" })
-        if (!isValidName(fname)) return res.status(400).send({ status: false, msg: "Invalid Fname" })
-
+        if (!isValidName(fname)) return res.status(400).send({ status: false, msg: "Invalid Fname, available characters ( A-Z, a-z ) with minimum 2 characters" })
 
         if (!lname) return res.status(400).send({ status: false, msg: "lname is Mandatory" })
-        if (!isValidName(lname)) return res.status(400).send({ status: false, msg: "Invalid Lname" })
-
+        if (!isValidName(lname)) return res.status(400).send({ status: false, msg: "Invalid Lname, available characters ( A-Z, a-z ) with minimum 2 characters" })
 
         if (!title) return res.status(400).send({ status: false, msg: "title is Mandatory" })
         if (!isEnum(title)) return res.status(400).send({ status: false, msg: 'Invalid Title ,available tiltes ( Mr, Mrs, Miss)' })
@@ -64,8 +62,8 @@ const createAuthor = async function (req, res) {
         const emailExist = await authorModel.findOne({ email: email })
         if (emailExist) return res.status(400).send({ status: false, msg: "Email Already Exist" })
 
-        // if (!password) return res.status(400).send({ status: false, msg: "password is Mandatory" })
-        // if (!isValidPassword(password)) return res.status(400).send({ status: false, msg: "Use strong Password" })
+        if (!password) return res.status(400).send({ status: false, msg: "password is Mandatory" })
+        if (!isValidPassword(password)) return res.status(400).send({ status: false, msg: "Minimum 8 characters including ( a-z, A-Z, 0-9, special character- !@#$%^&* )" })
 
         const authorData = await authorModel.create(data)
         return res.status(201).send({ status: true, data: authorData })

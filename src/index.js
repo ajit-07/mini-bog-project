@@ -9,7 +9,7 @@ app.use(bodyParser.json());
 // app.use(bodyParser.urlencoded({ extended: true })); // -->  it is not mandatory
 
 mongoose.connect("mongodb+srv://TarunKumar123:xLcX9W1SI9646ftM@cluster1.tpwtwiv.mongodb.net/Project_1", {
-    useNewUrlParser: true // 
+    useNewUrlParser: true  
 })
     .then(() => console.log("MongoDb is connected"))
     .catch(err => console.log(err))

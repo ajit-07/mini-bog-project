@@ -23,7 +23,7 @@ const blogSchema = new mongoose.Schema({
 
     tags: {
         type: [String],
-        trim:true
+        trim: true
     },
 
     category: {

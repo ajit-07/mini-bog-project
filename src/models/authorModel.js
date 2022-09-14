@@ -6,12 +6,14 @@ const authorSchema = new mongoose.Schema({
     fname: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
+        uppercase:true
     },
     lname: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
+        uppercase:true
     },
     title: {
         type: String,

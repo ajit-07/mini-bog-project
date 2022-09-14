@@ -9,7 +9,7 @@ const authMiddleware = require("../authMiddleware/authentication")
 
 router.post("/authors", authorController.createAuthor) // to create authors
 
-router.post("/blogs", authMiddleware.authenticate, authMiddleware.authorisation, blogController.createBlogs) // to create blogs
+router.post("/blogs", authMiddleware.authenticate, blogController.createBlogs) // to create blogs
 
 router.get("/blogs", authMiddleware.authenticate, blogController.getBlogs) // to finding blogs
 

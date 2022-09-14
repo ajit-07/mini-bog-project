@@ -14,10 +14,8 @@ const login = async function (req, res) {
             authorId: author._id.toString(),
             topic: "bloggingWebsite"
         }
-        'project-1-group-59'
 
         let token = jwt.sign(payload, 'project-1-group-59');
-        res.header('x-api-key', token)
         res.status(200).send({ status: true, msg: "Author logged in successfully", data: token })
     }
     catch (err) {

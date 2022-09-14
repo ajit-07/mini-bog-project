@@ -190,8 +190,5 @@ let deleteBlogsByQuery = async function (req, res) {
     }
 }
 
-module.exports.createBlogs = createBlogs
-module.exports.getBlogs = getBlogs
-module.exports.deleteBlogsByParam = deleteBlogsByParam
-module.exports.deleteBlogsByQuery = deleteBlogsByQuery
-module.exports.updateBlog = updateBlog
+module.exports= {createBlogs,getBlogs,deleteBlogsByParam,eleteBlogsByQuery,updateBlog }
+

@@ -2,7 +2,7 @@ const authorModel = require("../models/authorModel")
 const blogModel = require("../models/blogModel")
 const mongoose = require("mongoose")
 const moment = require('moment')
-const ObjectId = mongoose.Types.ObjectId //check whether the format or objectid is of 24 digit or not
+const ObjectId = mongoose.Types.ObjectId
 const validation = require("../validator/validation")
 
 let time = moment().format()
@@ -94,9 +94,6 @@ const deleteBlogsByParam = async function (req, res) {
     try {
         let blogId = req.params.blogId
 
-        let check = await blogModel.findById(blogId)
-        if (check.isDeleted == true) {return res.status(404).send({ status: false, msg: "Data has already been deleted." })}
-
         await blogModel.findByIdAndUpdate(blogId, { isDeleted: true, deletedAt: moment() }, { new: true })
         return res.status(200).send({ status: false, msg: "Deleted successfully" })
     }
@@ -110,17 +107,14 @@ const deleteBlogsByParam = async function (req, res) {
 const updateBlog = async function (req, res) {
     try {
         let blogId = req.params.blogId;
-        let data=req.body
+        let data = req.body
         let { title, body, tags, subcategory } = data;
 
-        let blog = await blogModel.findOne({ _id: blogId, isDeleted: true })//.select({isDeleted:1,_id:0})
-        // console.log(blog);
-        if (blog) { return res.status(404).send({ status: false, msg: "No such blog present in DB or is already deleted" }) }
 
         // console.log(title, body, tags, subcategory);
         if (Object.keys(data).length == 0) return res.status(400).send({ status: false, msg: "Please provide blog details to update" });
 
-        let temp1 = { isPublished: true, publishedAt: time}
+        let temp1 = { isPublished: true, publishedAt: time }
         let temp2 = {}
 
         if (title) {
@@ -143,8 +137,6 @@ const updateBlog = async function (req, res) {
             temp2.subcategory = validation.isValidForArray(subcategory)
         }
 
-
-
         const updatedBlog = await blogModel.findOneAndUpdate({ _id: blogId }, { $set: temp1, $addToSet: temp2 }, { new: true })
 
         return res.status(200).send({ status: true, data: updatedBlog });
@@ -158,37 +150,36 @@ const updateBlog = async function (req, res) {
 
 
 let deleteBlogsByQuery = async function (req, res) {
-    try {
-        let data=req.query
-        let { authorId, category, tags, subcategory, isPublished } = data
-        if (Object.keys(req.query).length === 0) { return res.status(400).send({ status: false, msg: "Please apply filter" }) }
-        let filterQuery = {}
 
-        if (authorId && authorId.trim() !== "") { filterQuery.authorId = authorId.trim() }
+    let data = req.query
+    let { authorId, category, tags, subcategory, isPublished } = data
 
-        if (category && category.trim() !== "") { filterQuery.category = category.trim() }
+    if (Object.keys(data).length === 0) { return res.status(400).send({ status: false, msg: "Please apply filter" }) }
+
+    let filterQuery = {}
+    filterQuery.isDeleted = false
+    filterQuery.authorId = req.decodedToken.authorId;
+
+    if (authorId && authorId.trim() !== "") { filterQuery.authorId = authorId.trim() }
+
+    if (category && category.trim() !== "") { filterQuery.category = category.trim() }
+
+    if (tags && tags.trim() !== "") { filterQuery.tags = tags.trim() }
+
+    if (subcategory && subcategory.trim() !== "") { filterQuery.subcategory = subcategory.trim() }
+
+    if (isPublished && isPublished.trim() !== "") { filterQuery.isPublished = Boolean(isPublished) }
+    //console.log(filterQuery)
 
 
-        if (tags && tags.trim() !== "") { filterQuery.tags = tags.trim() }
+    let filtered = await blogModel.find(filterQuery)
+    if (filtered.length === 0) { return res.status(403).send({ status: "false", msg: "No such blog found or user not authorized" }) }
+
+    await blogModel.updateMany(filterQuery, { isDeleted: true, deletedAt: time }, { new: true })
+    return res.status(200).send({ status: true, msg: "Deleted successfully" })
 
 
-        if (subcategory && subcategory.trim() !== "") { filterQuery.subcategory = subcategory.trim() }
-
-        if (isPublished && isPublished.trim() !== "") { filterQuery.isPublished = Boolean(isPublished) }
-
-        filterQuery.isDeleted = false;
-
-        let filtered = await blogModel.find(filterQuery)
-        if (filtered.length == 0) { return res.status(400).send({ status: "false", msg: "No such blog present or already Deleted" }) }
-        else {
-            let deletedData = await blogModel.updateMany(filterQuery, { isDeleted: true, deletedAt: time }, { new: true })
-            return res.status(200).send({ status: true, msg: "Deleted successfully" })
-        }
-    }
-    catch (err) {
-        return res.status(500).send({ status: false, msg: err.message })
-    }
 }
 
-module.exports= {createBlogs,getBlogs,deleteBlogsByParam,eleteBlogsByQuery,updateBlog }
+module.exports = { createBlogs, getBlogs, deleteBlogsByParam, deleteBlogsByQuery, updateBlog }
 

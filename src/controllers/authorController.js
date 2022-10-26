@@ -1,10 +1,11 @@
 const authorModel = require("../models/authorModel")
 const validation = require("../validator/validation")
+const jwt = require('jsonwebtoken')
 
 
 const createAuthor = async function (req, res) {
     try {
-        let data=req.body
+        let data = req.body
         const { fname, lname, title, email, password } = data;
 
         if (Object.keys(data).length == 0) return res.status(400).send({ status: false, msg: "Data is mandatory" })
@@ -19,11 +20,11 @@ const createAuthor = async function (req, res) {
         if (!validation.isEnum(title)) return res.status(400).send({ status: false, msg: 'Invalid Title ,available titles ( Mr, Mrs, Miss)' })
 
         if (!email) return res.status(400).send({ status: false, msg: "Email is Mandatory" })
-        
+
         if (!validation.isValidEmail(email)) return res.status(400).send({ status: false, msg: "Invalid email format" })
-        
+
         const emailExist = await authorModel.findOne({ email: email })
-        if (emailExist) return res.status(400).send({ status: false, msg: `${email.trim()} email Already Exist `})
+        if (emailExist) return res.status(400).send({ status: false, msg: `${email.trim()} email Already Exist ` })
 
         if (!password) return res.status(400).send({ status: false, msg: "password is Mandatory" })
         if (!validation.isValidPassword(password)) return res.status(400).send({ status: false, msg: "Minimum 8 characters including ( a-z, A-Z, 0-9, special character- !@#$%^&* )" })
@@ -36,4 +37,36 @@ const createAuthor = async function (req, res) {
     }
 }
 
-module.exports.createAuthor = createAuthor
+
+const login = async function (req, res) {
+    try {
+        const data = req.body;
+        const { email, password } = data;
+
+        if (Object.keys(data).length === 0) return res.status(400).send({ status: false, message: "Login credentials missing!!" })
+
+        if (!email) return res.status(400).send({ status: false, msg: "Email is Mandatory" })
+        if (!validation.isValidEmail(email)) return res.status(400).send({ status: false, msg: "Invalid email format" })
+
+        if (!password) return res.status(400).send({ status: false, msg: "password is Mandatory" })
+        if (!validation.isValidPassword(password)) return res.status(400).send({ status: false, msg: "Minimum 8 characters including ( a-z, A-Z, 0-9, special character- !@#$%^&* )" })
+
+        const author = await authorModel.findOne({ email: email, password: password })
+
+        if (!author) return res.status(401).send({ status: false, msg: "Invalid Credentials!!" })
+
+        let payload = {
+            authorId: author._id.toString(),
+            topic: "bloggingWebsite"
+        }
+
+        let token = jwt.sign(payload, 'project-1-group-59');
+        res.status(200).send({ status: true, msg: "Author logged in successfully", data: token })
+    }
+    catch (err) {
+        return res.status(500).send({ msg: err.message })
+    }
+}
+
+module.exports.createAuthor = createAuthor;
+module.exports.login = login;

@@ -12,13 +12,15 @@ let token;
 const authenticate = function (req, res, next) {
     try {
         token = req.headers["x-api-key"];
-        if (!token) return res.status(400).send({ status: false, msg: "token must be present" });
+        if (!token) return res.status(401).send({ status: false, msg: "token must be present" });
 
 
         jwt.verify(token, "project-1-group-59", function (err, decodedToken) {
             if (err) { return res.status(401).send({ status: false, msg: "token is invalid" }) }
+
             req.decodedToken = decodedToken
-            next()
+
+            return next()
         });
     }
     catch (err) {
@@ -31,27 +33,21 @@ const authenticate = function (req, res, next) {
 
 const authorisation = async function (req, res, next) {
     try {
-//check authorization when data is coming from path params
+
         let userLoggedIn = req.decodedToken.authorId
 
-        if (req.params.blogId) {
-            let blogId = req.params.blogId
-            if (!ObjectId.isValid(blogId.trim())) return res.status(400).send({ status: false, msg: "BlogId is not valid" })
-            const userToBeModified = await blogModel.findById(blogId)
+        let blogId = req.params.blogId;
 
-            if (!userToBeModified) return res.status(404).send({ status: false, msg: "No such Blog present" })
+        if (!ObjectId.isValid(blogId.trim())) return res.status(400).send({ status: false, msg: "BlogId is not valid" })
 
-            if (userToBeModified.authorId.toString() !== userLoggedIn) return res.status(403).send({ status: false, msg: 'Access denied' })
-            next()
-        }
+        const userToBeModified = await blogModel.findById(blogId)
+        if (!userToBeModified) return res.status(404).send({ status: false, msg: "No such Blog present" })
 
-        if (req.query.authorId) {
- //check when the data is coming from query params           
-            let authorId = req.query.authorId;
-            if (!ObjectId.isValid(authorId.trim())) return res.status(400).send({ status: false, msg: "AuthorId is not valid" })
-            if (authorId.toString() !== userLoggedIn) return res.status(403).send({ status: false, msg: 'Access denied' })
-            next()
-        }
+        if(userToBeModified.isDeleted===true) return res.status(400).send({status:false,message:"Blog is already deleted"})
+
+        if (userToBeModified.authorId.toString() !== userLoggedIn) return res.status(403).send({ status: false, msg: 'User not authorized' })
+
+        return next()
     }
     catch (err) {
         return res.status(500).send({ status: false, msg: err.message })
@@ -129,7 +125,7 @@ module.exports.authorisation = authorisation
 
 
 
-        
+
 
 
 

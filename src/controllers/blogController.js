@@ -151,6 +151,7 @@ const updateBlog = async function (req, res) {
 
 let deleteBlogsByQuery = async function (req, res) {
 
+ try{
     let data = req.query
     let { authorId, category, tags, subcategory, isPublished } = data
 
@@ -178,7 +179,10 @@ let deleteBlogsByQuery = async function (req, res) {
     await blogModel.updateMany(filterQuery, { isDeleted: true, deletedAt: time }, { new: true })
     return res.status(200).send({ status: true, msg: "Deleted successfully" })
 
-
+}
+    catch (err) {
+        return res.status(500).send({ msg: err.message })
+    }
 }
 
 module.exports = { createBlogs, getBlogs, deleteBlogsByParam, deleteBlogsByQuery, updateBlog }
